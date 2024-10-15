@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
@@ -12,6 +13,10 @@ import { nanoid } from 'nanoid';
 @Injectable()
 export class UrlService {
   constructor(@InjectModel(Url) private urlModel: typeof Url) {}
+
+  async getUrl() {
+    return this.urlModel.findAll();
+  }
 
   async shortenUrl(url: ShortenURLDto) {
     const { longUrl } = url;
@@ -45,6 +50,21 @@ export class UrlService {
         shortUrl: urlResult.shortUrl,
         longUrl: urlResult.longUrl,
       };
+    } catch (error) {
+      console.log(error);
+      throw new UnprocessableEntityException('Server Error');
+    }
+  }
+
+  async redirectUrl(urlCode: string) {
+    try {
+      const url = await this.urlModel.findOne({ where: { urlCode } });
+      console.log(url.longUrl);
+      if (!url) {
+        throw new NotFoundException('Url not found');
+      }
+
+      return url.longUrl;
     } catch (error) {
       console.log(error);
       throw new UnprocessableEntityException('Server Error');
