@@ -40,6 +40,7 @@ export class UrlService {
       //if doesn't exist add new url version to database
       const shortUrl = `${baseURL}/${urlCode}`;
 
+      // add new url  short into database
       const urlResult = await this.urlModel.create({
         urlCode,
         longUrl,
@@ -59,7 +60,6 @@ export class UrlService {
   async redirectUrl(urlCode: string) {
     try {
       const url = await this.urlModel.findOne({ where: { urlCode } });
-      console.log(url.longUrl);
       if (!url) {
         throw new NotFoundException('Url not found');
       }
@@ -67,7 +67,7 @@ export class UrlService {
       return url.longUrl;
     } catch (error) {
       console.log(error);
-      throw new UnprocessableEntityException('Server Error');
+      throw new NotFoundException('Url not found');
     }
   }
 }
